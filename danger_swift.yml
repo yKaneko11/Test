@@ -1,4 +1,3 @@
-
 name: Danger Swift
 
 on: [pull_request]
@@ -6,7 +5,7 @@ on: [pull_request]
 jobs:
   danger:
     name: Danger
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@master
@@ -14,20 +13,11 @@ jobs:
         uses: actions/setup-ruby@v1
         with:
             ruby-version: '2.x'
-      - name: cache bundle
-        uses: actions/cache@v2
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-
-      - name: setup bundle
+            architecture: 'x64'
+      - name: Setup Danger
         run: |
-          gem install bundler
-          bundle config path vendor/bundle
-          bundle install --jobs 4 --retry 3
+          gem install danger danger-swiftlint
       - name: Run Danger
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          bundle exec danger
+        run: danger

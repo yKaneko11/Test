@@ -1,23 +1,16 @@
-# Sometimes it's a README fix, or something like that - which isn't relevant for
-# including in a project's CHANGELOG for example
-declared_trivial = github.pr_title.include? "#trivial"
-
-# Make it more obvious that a PR is a work in progress and shouldn't be merged yet
-warn("PR is classed as Work in Progress") if github.pr_title.include? "[WIP]"
-
 # Warn when there is a big PR
-warn("Big PR") if git.lines_of_code > 500
+warn("Big PR, try to keep changes smaller if you can :cry:") if git.lines_of_code > 1000
 
-# Don't let testing shortcuts get into master by accident
-fail("fdescribe left in tests") if `grep -r fdescribe specs/ `.length > 1
-fail("fit left in tests") if `grep -r fit specs/ `.length > 1
+# Notify important file changes
+important_files = %w(Podfile.lock Gemfile.lock Cartfile.resolved project.yml)
 
-## assigneeが未割り当てかのチェック
-if github.pr_json['assignee'] == nil
-  ## github.api 経由で GitHubの操作可能
-  github.api.add_assignees(
-    github.pr_json['base']['repo']['full_name'],
-    github.pr_json['number'],
-    [github.pr_author] ## <- 起票者は github.pr_author
-  )
+git.modified_files.map do |file|
+  if important_files.include?(file)
+    message "#{file} has changed. If you agree, ignore this comment."
+  end
 end
+
+# Swiftlint
+github.dismiss_out_of_range_messages
+swiftlint.config_file = '.swiftlint.yml'
+swiftlint.lint_files inline_mode: true

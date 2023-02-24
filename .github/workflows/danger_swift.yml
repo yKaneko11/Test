@@ -1,15 +1,45 @@
 name: Danger Swift
 
-on: [pull_request]
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  statuses: write
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    name: "Run Danger"
+  danger:
+
+    runs-on: macos-latest
+    timeout-minutes: 45
+
     steps:
-      - uses: actions/checkout@v1
-      - name: Danger
-        uses: danger/swift@3.15.0
+      - uses: actions/checkout@v2
+
+      - name: Cache Gems
+        uses: actions/cache@v2
+        env:
+          cache-name: gems
         with:
-            args: --failOnErrors --no-publish-check
+          path: vendor/bundle
+          key: v1-${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('Gemfile.lock') }}
+          restore-keys: |
+            v1-${{ runner.os }}-${{ env.cache-name }}-
+
+      - name: Install Gems
+        env:
+          BUNDLE_JOBS: 4
+          BUNDLE_RETRY: 3
+        run: |
+          bundle config set path 'vendor/bundle' ; bundle config set clean 'true'
+          bundle check || bundle install
+
+      - name: Run Danger
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bundle exec danger

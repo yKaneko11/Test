@@ -22,6 +22,12 @@ if github.pr_json['assignee'] == nil
   )
 end
 
+if github.pr_title.include? 'WIP'
+    markdown(
+      "@#{github.pr_author} タイトルの[WIP]は非推奨です。GitHubのDraft Pull Request機能を使ってください。途中からでもDraftにできます。"
+    )
+  end
+
 # 修正範囲外をチェック対象から外します。
 github.dismiss_out_of_range_messages
 

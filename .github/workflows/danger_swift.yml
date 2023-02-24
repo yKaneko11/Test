@@ -14,7 +14,7 @@ permissions:
 jobs:
   danger:
 
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 45
 
     steps:

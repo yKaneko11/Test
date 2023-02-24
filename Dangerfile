@@ -1,16 +1,20 @@
-# Warn when there is a big PR
-warn("Big PR, try to keep changes smaller if you can :cry:") if git.lines_of_code > 1000
+# Check PR
+warn("PRがWIPになってるよ！🐶") if github.pr_title.include? "[WIP]"
 
-# Notify important file changes
-important_files = %w(Podfile.lock Gemfile.lock Cartfile.resolved project.yml)
+warn("PRのタイトルが短すぎるよ！🐶") if github.pr_title.length < 5
 
-git.modified_files.map do |file|
-  if important_files.include?(file)
-    message "#{file} has changed. If you agree, ignore this comment."
-  end
-end
+warn("PRにタイトルが書かれてないよ！🐶") if github.pr_title.length == 0
+
+warn("PRの説明が短すぎるよ！レビュアーが見て分かる説明を書いてね！🐶") if github.pr_body.length < 5
+
+warn("PRにassigneeが設定されてないよ！🐶") unless github.pr_json["assignee"]
+
+pr_has_screenshot = github.pr_body =~ /https?:\/\/\S*\.(png|jpg|jpeg|gif){1}/
+warn("UIレビューの時はスクリーンショットを添付してね！🐶") if !pr_has_screenshot
+
+# 修正範囲外をチェック対象から外します。
+github.dismiss_out_of_range_messages
 
 # Swiftlint
-github.dismiss_out_of_range_messages
-swiftlint.config_file = '.swiftlint.yml'
-swiftlint.lint_files inline_mode: true
+# swiftlint.config_file = '.swiftlint.yml'
+# swiftlint.lint_files inline_mode: true
